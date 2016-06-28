@@ -3,19 +3,18 @@ package com.ftinc.scoop;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.StyleRes;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatDelegate;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.ftinc.scoop.model.Flavor;
+import com.ftinc.scoop.model.SugarCone;
+import com.ftinc.scoop.model.Topping;
 import com.ftinc.scoop.util.AttrUtils;
 
 import java.util.ArrayList;
@@ -46,6 +45,12 @@ public class Scoop {
 
     public static Builder waffleCone(){
         return new Builder();
+    }
+
+    public static SugarCone sugarCone(){
+        Scoop instance = getInstance();
+        instance.checkInit();
+        return instance.mSugarCone;
     }
 
     /***********************************************************************************************
@@ -85,6 +90,11 @@ public class Scoop {
     private SharedPreferences mPreferences;
 
     /**
+     * SugarCone instance to track the deeper color customizations
+     */
+    private SugarCone mSugarCone;
+
+    /**
      * Private constructor to prevent initialization
      */
     private Scoop(){}
@@ -113,6 +123,10 @@ public class Scoop {
             if(builder.defaultFlavor != null){
                 mDefaultFlavorIndex = mFlavors.indexOf(builder.defaultFlavor);
             }
+
+            // SugarCone
+            mSugarCone = new SugarCone();
+            mSugarCone.addToppings(builder.toppings);
 
             // Set init flag
             mInitialized = true;
@@ -307,9 +321,11 @@ public class Scoop {
         private SharedPreferences prefs;
         private Flavor defaultFlavor;
         private final List<Flavor> flavors;
+        private final List<Topping> toppings;
 
         Builder(){
             flavors = new ArrayList<>();
+            toppings = new ArrayList<>();
         }
 
         public Builder addFlavor(String name,
@@ -359,6 +375,11 @@ public class Scoop {
 
         public Builder addFlavor(Flavor... flavor){
             flavors.addAll(Arrays.asList(flavor));
+            return this;
+        }
+
+        public Builder addToppings(Topping... toppings){
+            this.toppings.addAll(Arrays.asList(toppings));
             return this;
         }
 

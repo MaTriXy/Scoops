@@ -5,7 +5,7 @@ Scoops
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.52inc/scoops/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.52inc/scoops) [![Build Status](https://travis-ci.org/52inc/Scoops.svg?branch=master)](https://travis-ci.org/52inc/Scoops)
 
-Android library for managing and applying multiple defined `R.style.Theme....` themes at runtime for dyanically changing the look and feel of your application
+Scoops is an Android library for managing and applying multiple defined `R.style.Theme....` themes at runtime for dynamically changing the look and feel of your application.
 
 ---
 ## Demo
@@ -53,7 +53,7 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-You can also use `.applyDialog(...)` to apply the specified dialog theme resource to an activity (to make an activity appear as a dialog with the correct theme)
+You can also use `.applyDialog(...)` to apply the specified dialog theme resource to an activity (to make an activity appear as a dialog with the correct theme).
 
 ### Advanced Use
 
@@ -89,18 +89,112 @@ Then define the attribute in your themes like this:
 </style>
 ```
 
-You can also apply the `toolbarItemTint` color to all the icons in the toolbar by calling `.apply(Context, Menu)` 
+You can also apply the `toolbarItemTint` color to all the icons in the toolbar by calling `.apply(Context, Menu)`. 
 
 	
 ### Settings Menu
 
-This library provides a built in theme chooser settings screen to use called `ScoopSettingsActivity` that you can use by utilizing one of it's static Intent factories:
+This library provides a built-in theme chooser settings screen to use called `ScoopSettingsActivity` that you can use by utilizing one of its static Intent factories:
 
 ```java
 ScoopSettingsActivity.createIntent(Context);
 ScoopSettingsActivity.createIntent(Context, R.string.some_title_to_use);
 ScoopSettingsActivity.createIntent(Context, "Some title to use");
 ```
+
+## Beta
+
+You can access beta by adding these lines to your gradle configuration:
+
+```groovy
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+}
+```
+
+```groovy
+compile 'com.52inc:scoops:0.2.1-SNAPSHOT'
+```
+
+### Dynamic color property changing
+
+This is the ability to have a view or attribute update it's color (background, src, text, etc) whenever the user/developer chnages the color for a defined property, or `Topping`. Please refer to [Sample App](https://github.com/52inc/Scoops/tree/feature-dynamic-color-attr/app/src/main/java/com/ftinc/themeenginetest) for actual code references.
+
+#### Manual Implementation
+
+For example:
+
+```java
+Toolbar mAppBar;
+
+@Override
+public void onCreate(Bundle savedInstanceState){
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.some_layout);
+	
+	Scoop.sugarCone().bind(this, Toppings.PRIMARY, mAppBar)
+					 .bindStatusBar(this, Toppings.PRIMARY_DARK);
+}
+
+void onSomeEvent(){
+	Scoop.sugarCone().update(Toppings.PRIMARY, someColorInt) 
+ 					 .update(Toppings.PRIMARY_DARK, someDarkColorInt);
+}
+
+```
+
+#### Annotated Implementation
+There are two annotations to use to binding views and the like to color properties that can be dynamically updated (i.e. palette, etc) which are `@BindScoop()` and `@BindScoopStatus()`.
+
+The former binds a View to a color property and the later binds an activities status bar color to a property.
+For Example:
+
+```java
+@BindScoopStatus(Toppings.PRIMARY_DARK)
+public class MainActivity extends AppCompatActivity {
+
+    @BindScoop(Toppings.PRIMARY)
+    @BindView(R.id.appbar)
+    Toolbar mAppBar;
+
+    @BindScoop(
+            value = Toppings.ACCENT,
+            adapter = FABColorAdapter.class,
+            interpolator = AccelerateInterpolator.class
+    )
+    @BindView(R.id.fab)
+    FloatingActionButton mFab;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Bind ButterKnife
+        ButterKnife.bind(this);
+
+        // Bind Scoops
+        Scoop.sugarCone().bind(this);
+		
+		...
+    }
+
+    @Override
+    protected void onDestroy() {
+        Scoop.sugarCone().unbind(this);
+        super.onDestroy();
+    }
+}
+```
+
+Then all properties will automatically update.
+
+
+_This is just they initial feature set. Soon I will streamline this with the Annotation Processor, and add plugin abilities to easily tie in the likes of Palette and other libraries as well as refine the API and make it more fluent._
+
 
 ## License
 
